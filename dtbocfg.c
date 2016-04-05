@@ -50,7 +50,7 @@ struct dtbocfg_overlay_item {
 };
 
 /**
- * dtbocfg_overlay_create() - Create Device Tree Overlay Item
+ * dtbocfg_overlay_create() - Create Device Tree Overlay
  * @overlay: Pointer to Device Tree Overlay Item
  * return    Success(0) or Error Status.
  */
@@ -89,7 +89,7 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
 }
 
 /**
- * dtbocfg_overlay_item_release() - Relase Device Tree Overlay Item
+ * dtbocfg_overlay_item_release() - Relase Device Tree Overlay
  * @overlay: Pointer to Device Tree Overlay Item
  * return    none
  */
@@ -153,7 +153,7 @@ static ssize_t dtbocfg_overlay_item_status_show(struct config_item *item, char *
 }
 
 /**
- * dtbocfg_overlay_item_dtbo_store() - Write Device Tree Blob
+ * dtbocfg_overlay_item_dtbo_store() - Store Device Tree Blob to Configuration Item
  * @item : Pointer to Configuration Item
  * @page : Pointer to Value Buffer 
  * @count: Size of Value Buffer
@@ -183,7 +183,7 @@ static ssize_t dtbocfg_overlay_item_dtbo_store(struct config_item *item, const c
 }
 
 /**
- * dtbocfg_overlay_item_dtbo_show() - Read Device Tree Blob
+ * dtbocfg_overlay_item_dtbo_show() - Read Device Tree Blob from Configuration Item
  * @item : Pointer to Configuration Item
  * @page : Pointer to Value for Store
  * return  Read Size
@@ -350,7 +350,7 @@ static int __init dtbocfg_module_init(void)
     pr_info("%s: OK\n", __func__);
     return 0;
 
- register_group_failed:
+  register_group_failed:
     configfs_unregister_subsystem(&dtbocfg_root_subsys);
   register_subsystem_failed:
     return retval;
