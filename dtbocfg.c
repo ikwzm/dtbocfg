@@ -370,4 +370,4 @@ module_exit(dtbocfg_module_exit);
 
 MODULE_AUTHOR("ikwzm");
 MODULE_DESCRIPTION("Device Tree Overlay Configuration File System");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("Dual BSD/GPL");
