@@ -195,6 +195,9 @@ static ssize_t dtbocfg_overlay_item_dtbo_show(struct config_item *item, char *bu
     if (overlay->dtbo == NULL)
         return 0;
 
+    if (overlay->dtbo_size > PAGE_SIZE)
+        return -EINVAL;
+
     if (buf != NULL) 
         memcpy(buf, overlay->dtbo, overlay->dtbo_size);
 
