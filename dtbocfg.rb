@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 #---------------------------------------------------------------------------------
 #
-#       Version     :   0.0.1
-#       Created     :   2016/4/28
+#       Version     :   0.2.0
+#       Created     :   2018/3/1
 #       File name   :   dtbocfg.rb
 #       Author      :   Ichiro Kawazome <ichiro_k@ca2.so-net.ne.jp>
 #       Description :   dtbocfg(Device Tree Overlay Blob Configuration) 
@@ -11,7 +11,7 @@
 #
 #---------------------------------------------------------------------------------
 #
-#       Copyright (C) 2014-2015 Ichiro Kawazome
+#       Copyright (C) 2014-2018 Ichiro Kawazome
 #       All rights reserved.
 # 
 #       Redistribution and use in source and binary forms, with or without
@@ -40,6 +40,7 @@
 # 
 #---------------------------------------------------------------------------------
 require 'optparse'
+require 'tempfile'
 
 class DeviceTreeOverlayConfiguration
 
@@ -54,6 +55,17 @@ class DeviceTreeOverlayConfiguration
     @debug                    = false
   end
 
+  def dtbocfg?
+    begin
+      current_status = File.open("#{@device_tree_overlay_path}/status").read.chop
+      return ((current_status == "0") or (current_status == "1"))
+    rescue => e
+      print "error raised:"
+      p e
+      abort
+    end
+  end
+
   def create
     begin
       Dir.mkdir(@device_tree_overlay_path)
@@ -65,32 +77,48 @@ class DeviceTreeOverlayConfiguration
   end
 
   def start
-    begin 
-      File.write("#{@device_tree_overlay_path}/status", "1")
-    rescue => e
-      print "error raised:"
-      p e
-      Dir.rmdir(@device_tree_overlay_path)
-      abort
+    if dtbocfg? then
+      begin
+        File.write("#{@device_tree_overlay_path}/status", "1")
+      rescue => e
+        print "error raised:"
+        p e
+        Dir.rmdir(@device_tree_overlay_path)
+        abort
+      end
+    else
+      print("warning: start command is dtbocfg only.")
     end
   end
   
   def stop
-    begin 
-      File.write("#{@device_tree_overlay_path}/status", "0")
-    rescue => e
-      print "error raised:"
-      p e
-      Dir.rmdir(@device_tree_overlay_path)
-      abort
+    if dtbocfg? then
+      begin 
+        File.write("#{@device_tree_overlay_path}/status", "0")
+      rescue => e
+        print "error raised:"
+        p e
+        Dir.rmdir(@device_tree_overlay_path)
+        abort
+      end
+    else
+      print ("warning: stop command is dtbocfg only.")
     end
   end
 
   def load_dts(filename, input_stream)
     puts "load_dts(#{filename}, #{input_stream})" if (@debug)
     begin
-      IO.popen("dtc -I dts -O dtb -o #{@device_tree_overlay_path}/dtbo", "r+") do |dtbo|
-        dtbo.write(input_stream.read)
+      if dtbocfg? then
+        IO.popen("dtc -I dts -O dtb -o #{@device_tree_overlay_path}/dtbo", "r+") do |dtbo|
+          dtbo.write(input_stream.read)
+        end
+      else
+        dtb_file = Tempfile.new('dtbocfg')
+        IO.popen("dtc -I dts -O dtb -o #{dtb_file.path}", "r+") do |dtbo|
+          dtbo.write(input_stream.read)
+        end
+        load_dtb(dtb_file.path, dtb_file)
       end
     rescue => e
       print "error raised:"
@@ -124,7 +152,16 @@ class DeviceTreeOverlayConfiguration
     puts "install(#{format}, #{filename}, #{input_stream})" if (@debug)
     create
     load(format, filename, input_stream)
-    start
+    if dtbocfg? then
+      begin
+        File.write("#{@device_tree_overlay_path}/status", "1")
+      rescue => e
+        print "error raised:"
+        p e
+        Dir.rmdir(@device_tree_overlay_path)
+        abort
+      end
+    end
   end
 
   def remove
@@ -141,7 +178,7 @@ end
 class Dtbocfg
   def initialize
     @program_name      = "dtbocfg"
-    @program_version   = "0.0.2"
+    @program_version   = "0.2.0"
     @program_id        = @program_name + " " + @program_version
     @verbose           = false
     @debug             = false
