@@ -1,6 +1,6 @@
 /*********************************************************************************
  *
- *       Copyright (C) 2016-2017 Ichiro Kawazome
+ *       Copyright (C) 2016-2018 Ichiro Kawazome
  *       All rights reserved.
  * 
  *       Redistribution and use in source and binary forms, with or without
@@ -59,7 +59,7 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
 {
     int ret_val;
 
-#if     (LINUX_VERSION_CODE >= 0x040700)
+#if (LINUX_VERSION_CODE >= 0x040700)
     of_fdt_unflatten_tree(overlay->dtbo, NULL, &overlay->node);
 #else
     of_fdt_unflatten_tree(overlay->dtbo, &overlay->node);
@@ -71,21 +71,37 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
     }
     pr_debug("%s: unflattened OK\n", __func__);
 
-    of_node_set_flag(overlay->node, OF_DETACHED);
+#if (LINUX_VERSION_CODE >= 0x040F00)
+    {
+        int ovcs_id = 0;
 
-    ret_val = of_resolve_phandles(overlay->node);
-    if (ret_val != 0) {
-        pr_err("%s: Failed to resolve tree\n", __func__);
-        goto failed;
+        ret_val = of_overlay_apply(overlay->node, &ovcs_id);
+        if (ret_val != 0) {
+            pr_err("%s: Failed to apply overlay (ret_val=%d)\n", __func__, ret_val);
+            goto failed;
+        }
+        overlay->id = ovcs_id;
+        pr_debug("%s: apply OK(id=%d)\n", __func__, ovcs_id);
     }
-    pr_debug("%s: resolved OK\n", __func__);
+#else
+    {
+        of_node_set_flag(overlay->node, OF_DETACHED);
 
-    ret_val = of_overlay_create(overlay->node);
-    if (ret_val < 0) {
-        pr_err("%s: Failed to create overlay (ret_val=%d)\n", __func__, ret_val);
-        goto failed;
+        ret_val = of_resolve_phandles(overlay->node);
+        if (ret_val != 0) {
+            pr_err("%s: Failed to resolve tree\n", __func__);
+            goto failed;
+        }
+        pr_debug("%s: resolved OK\n", __func__);
+
+        ret_val = of_overlay_create(overlay->node);
+        if (ret_val < 0) {
+            pr_err("%s: Failed to create overlay (ret_val=%d)\n", __func__, ret_val);
+            goto failed;
+        }
+        overlay->id = ret_val;
     }
-    overlay->id = ret_val;
+#endif
     pr_debug("%s: create OK\n", __func__);
     return 0;
 
@@ -101,7 +117,11 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
 static void dtbocfg_overlay_item_release(struct dtbocfg_overlay_item *overlay)
 {
     if (overlay->id >= 0) {
+#if (LINUX_VERSION_CODE >= 0x040F00)
+        of_overlay_remove(&overlay->id);
+#else        
         of_overlay_destroy(overlay->id);
+#endif        
         overlay->id = -1;
     }
 }
