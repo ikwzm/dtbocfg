@@ -71,7 +71,19 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
     }
     pr_debug("%s: unflattened OK\n", __func__);
 
-#if (LINUX_VERSION_CODE >= 0x040F00)
+#if (LINUX_VERSION_CODE >= 0x041100)
+    {
+        int ovcs_id = 0;
+
+        ret_val = of_overlay_fdt_apply(overlay->dtbo,overlay->dtbo_size, &ovcs_id);
+        if (ret_val != 0) {
+            pr_err("%s: Failed to apply overlay (ret_val=%d)\n", __func__, ret_val);
+            goto failed;
+        }
+        overlay->id = ovcs_id;
+        pr_debug("%s: apply OK(id=%d)\n", __func__, ovcs_id);
+    }
+#elif (LINUX_VERSION_CODE >= 0x040F00)
     {
         int ovcs_id = 0;
 
