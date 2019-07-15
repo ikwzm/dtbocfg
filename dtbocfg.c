@@ -1,6 +1,6 @@
 /*********************************************************************************
  *
- *       Copyright (C) 2016-2018 Ichiro Kawazome
+ *       Copyright (C) 2016-2019 Ichiro Kawazome
  *       All rights reserved.
  * 
  *       Redistribution and use in source and binary forms, with or without
@@ -44,7 +44,9 @@
  */
 struct dtbocfg_overlay_item {
     struct config_item	    item;
+#if (LINUX_VERSION_CODE < 0x041100)
     struct device_node*     node;
+#endif
     int                     id;
     void*                   dtbo;
     int                     dtbo_size;
@@ -59,18 +61,6 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
 {
     int ret_val;
 
-#if (LINUX_VERSION_CODE >= 0x040700)
-    of_fdt_unflatten_tree(overlay->dtbo, NULL, &overlay->node);
-#else
-    of_fdt_unflatten_tree(overlay->dtbo, &overlay->node);
-#endif
-    if (overlay->node == NULL) {
-        pr_err("%s: failed to unflatten tree\n", __func__);
-        ret_val = -EINVAL;
-        goto failed;
-    }
-    pr_debug("%s: unflattened OK\n", __func__);
-
 #if (LINUX_VERSION_CODE >= 0x041100)
     {
         int ovcs_id = 0;
@@ -83,7 +73,21 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
         overlay->id = ovcs_id;
         pr_debug("%s: apply OK(id=%d)\n", __func__, ovcs_id);
     }
-#elif (LINUX_VERSION_CODE >= 0x040F00)
+#else
+    
+#if (LINUX_VERSION_CODE >= 0x040700)
+    of_fdt_unflatten_tree(overlay->dtbo, NULL, &overlay->node);
+#else
+    of_fdt_unflatten_tree(overlay->dtbo, &overlay->node);
+#endif
+    if (overlay->node == NULL) {
+        pr_err("%s: failed to unflatten tree\n", __func__);
+        ret_val = -EINVAL;
+        goto failed;
+    }
+    pr_debug("%s: unflattened OK\n", __func__);
+
+#if (LINUX_VERSION_CODE >= 0x040F00)
     {
         int ovcs_id = 0;
 
@@ -113,6 +117,8 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
         }
         overlay->id = ret_val;
     }
+#endif
+
 #endif
     pr_debug("%s: create OK\n", __func__);
     return 0;
