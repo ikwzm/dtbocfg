@@ -1,6 +1,6 @@
 /*********************************************************************************
  *
- *       Copyright (C) 2016-2019 Ichiro Kawazome
+ *       Copyright (C) 2016-2021 Ichiro Kawazome
  *       All rights reserved.
  * 
  *       Redistribution and use in source and binary forms, with or without
@@ -196,13 +196,13 @@ static ssize_t dtbocfg_overlay_item_status_show(struct config_item *item, char *
 }
 
 /**
- * dtbocfg_overlay_item_dtbo_store() - Store Device Tree Blob to Configuration Item
+ * dtbocfg_overlay_item_dtbo_write() - Write Device Tree Blob to Configuration Item
  * @item : Pointer to Configuration Item
  * @page : Pointer to Value Buffer 
  * @count: Size of Value Buffer
  * return  Stored Size or Error Status.
  */
-static ssize_t dtbocfg_overlay_item_dtbo_store(struct config_item *item, const char *buf, size_t count)
+static ssize_t dtbocfg_overlay_item_dtbo_write(struct config_item *item, const void *buf, size_t count)
 {
     struct dtbocfg_overlay_item *overlay = container_of_dtbocfg_overlay_item(item);
 
@@ -226,22 +226,20 @@ static ssize_t dtbocfg_overlay_item_dtbo_store(struct config_item *item, const c
 }
 
 /**
- * dtbocfg_overlay_item_dtbo_show() - Read Device Tree Blob from Configuration Item
+ * dtbocfg_overlay_item_dtbo_read() - Read Device Tree Blob from Configuration Item
  * @item : Pointer to Configuration Item
- * @page : Pointer to Value for Store
+ * @page : Pointer to Value for Store, or NULL to query the buffer size
+ * @size : Size of the supplied buffer
  * return  Read Size
  */
-static ssize_t dtbocfg_overlay_item_dtbo_show(struct config_item *item, char *buf)
+static ssize_t dtbocfg_overlay_item_dtbo_read(struct config_item *item, void *buf, size_t size)
 {
     struct dtbocfg_overlay_item *overlay = container_of_dtbocfg_overlay_item(item);
 
     if (overlay->dtbo == NULL)
         return 0;
 
-    if (overlay->dtbo_size > PAGE_SIZE)
-        return -EINVAL;
-
-    if (buf != NULL) 
+    if (buf != NULL)
         memcpy(buf, overlay->dtbo, overlay->dtbo_size);
 
     return overlay->dtbo_size;
@@ -250,11 +248,15 @@ static ssize_t dtbocfg_overlay_item_dtbo_show(struct config_item *item, char *bu
 /**
  * Device Tree Blob Overlay Attribute Structure
  */
-CONFIGFS_ATTR(dtbocfg_overlay_item_, dtbo  );
+CONFIGFS_BIN_ATTR(dtbocfg_overlay_item_, dtbo, NULL, 1024 * 1024); // 1MiB should be way more than enough
 CONFIGFS_ATTR(dtbocfg_overlay_item_, status);
 
 static struct configfs_attribute *dtbocfg_overlay_attrs[] = {
     &dtbocfg_overlay_item_attr_status,
+    NULL,
+};
+
+static struct configfs_bin_attribute *dtbocfg_overlay_bin_attrs[] = {
     &dtbocfg_overlay_item_attr_dtbo,
     NULL,
 };
@@ -291,6 +293,7 @@ static struct configfs_item_operations dtbocfg_overlay_item_ops = {
 static struct config_item_type dtbocfg_overlay_item_type = {
     .ct_item_ops    = &dtbocfg_overlay_item_ops,
     .ct_attrs       = dtbocfg_overlay_attrs,
+    .ct_bin_attrs   = dtbocfg_overlay_bin_attrs,
     .ct_owner       = THIS_MODULE,
 };
 
