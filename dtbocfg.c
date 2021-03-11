@@ -1,6 +1,6 @@
 /*********************************************************************************
  *
- *       Copyright (C) 2016-2019 Ichiro Kawazome
+ *       Copyright (C) 2016-2021 Ichiro Kawazome
  *       All rights reserved.
  * 
  *       Redistribution and use in source and binary forms, with or without
@@ -196,7 +196,7 @@ static ssize_t dtbocfg_overlay_item_status_show(struct config_item *item, char *
 }
 
 /**
- * dtbocfg_overlay_item_dtbo_store() - Store Device Tree Blob to Configuration Item
+ * dtbocfg_overlay_item_dtbo_write() - Write Device Tree Blob to Configuration Item
  * @item : Pointer to Configuration Item
  * @page : Pointer to Value Buffer 
  * @count: Size of Value Buffer
@@ -226,7 +226,7 @@ static ssize_t dtbocfg_overlay_item_dtbo_write(struct config_item *item, const v
 }
 
 /**
- * dtbocfg_overlay_item_dtbo_show() - Read Device Tree Blob from Configuration Item
+ * dtbocfg_overlay_item_dtbo_read() - Read Device Tree Blob from Configuration Item
  * @item : Pointer to Configuration Item
  * @page : Pointer to Value for Store, or NULL to query the buffer size
  * @size : Size of the supplied buffer
