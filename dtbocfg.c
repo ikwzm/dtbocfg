@@ -65,7 +65,11 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
     {
         int ovcs_id = 0;
 
+#if (LINUX_VERSION_CODE >= 0x060600)
+        ret_val = of_overlay_fdt_apply(overlay->dtbo,overlay->dtbo_size, &ovcs_id, NULL);
+#else
         ret_val = of_overlay_fdt_apply(overlay->dtbo,overlay->dtbo_size, &ovcs_id);
+#endif
         if (ret_val != 0) {
             pr_err("%s: Failed to apply overlay (ret_val=%d)\n", __func__, ret_val);
             goto failed;
