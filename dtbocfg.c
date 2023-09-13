@@ -1,6 +1,6 @@
 /*********************************************************************************
  *
- *       Copyright (C) 2016-2021 Ichiro Kawazome
+ *       Copyright (C) 2016-2023 Ichiro Kawazome
  *       All rights reserved.
  * 
  *       Redistribution and use in source and binary forms, with or without
@@ -39,12 +39,15 @@
 #include <linux/file.h>
 #include <linux/version.h>
 
+#define DRIVER_NAME        "dtbocfg"
+#define DRIVER_VERSION     "0.1.0"
+
 /**
  * Device Tree Overlay Item Structure
  */
 struct dtbocfg_overlay_item {
     struct config_item	    item;
-#if (LINUX_VERSION_CODE < 0x041100)
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 17, 0))
     struct device_node*     node;
 #endif
     int                     id;
@@ -61,11 +64,15 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
 {
     int ret_val;
 
-#if (LINUX_VERSION_CODE >= 0x041100)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0))
     {
         int ovcs_id = 0;
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
+        ret_val = of_overlay_fdt_apply(overlay->dtbo,overlay->dtbo_size, &ovcs_id, NULL);
+#else
         ret_val = of_overlay_fdt_apply(overlay->dtbo,overlay->dtbo_size, &ovcs_id);
+#endif
         if (ret_val != 0) {
             pr_err("%s: Failed to apply overlay (ret_val=%d)\n", __func__, ret_val);
             goto failed;
@@ -75,7 +82,7 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
     }
 #else
     
-#if (LINUX_VERSION_CODE >= 0x040700)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0))
     of_fdt_unflatten_tree(overlay->dtbo, NULL, &overlay->node);
 #else
     of_fdt_unflatten_tree(overlay->dtbo, &overlay->node);
@@ -87,7 +94,7 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
     }
     pr_debug("%s: unflattened OK\n", __func__);
 
-#if (LINUX_VERSION_CODE >= 0x040F00)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0))
     {
         int ovcs_id = 0;
 
@@ -135,7 +142,7 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
 static void dtbocfg_overlay_item_release(struct dtbocfg_overlay_item *overlay)
 {
     if (overlay->id >= 0) {
-#if (LINUX_VERSION_CODE >= 0x040F00)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0))
         of_overlay_remove(&overlay->id);
 #else        
         of_overlay_destroy(overlay->id);
@@ -379,7 +386,7 @@ static int __init dtbocfg_module_init(void)
 {
     int retval = 0;
 
-    pr_info("%s\n", __func__);
+    pr_info(DRIVER_NAME ": " DRIVER_VERSION "\n");
 
     config_group_init(&dtbocfg_root_subsys.su_group);
     config_group_init_type_name(&dtbocfg_overlay_group, "overlays", &dtbocfg_overlays_type);
@@ -396,7 +403,7 @@ static int __init dtbocfg_module_init(void)
         goto register_group_failed;
     }
 
-    pr_info("%s: OK\n", __func__);
+    pr_info(DRIVER_NAME ": OK\n");
     return 0;
 
   register_group_failed:
