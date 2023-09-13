@@ -44,7 +44,7 @@
  */
 struct dtbocfg_overlay_item {
     struct config_item	    item;
-#if (LINUX_VERSION_CODE < 0x041100)
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(4, 17, 0))
     struct device_node*     node;
 #endif
     int                     id;
@@ -61,11 +61,11 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
 {
     int ret_val;
 
-#if (LINUX_VERSION_CODE >= 0x041100)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 17, 0))
     {
         int ovcs_id = 0;
 
-#if (LINUX_VERSION_CODE >= 0x060600)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(6, 6, 0))
         ret_val = of_overlay_fdt_apply(overlay->dtbo,overlay->dtbo_size, &ovcs_id, NULL);
 #else
         ret_val = of_overlay_fdt_apply(overlay->dtbo,overlay->dtbo_size, &ovcs_id);
@@ -79,7 +79,7 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
     }
 #else
     
-#if (LINUX_VERSION_CODE >= 0x040700)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 7, 0))
     of_fdt_unflatten_tree(overlay->dtbo, NULL, &overlay->node);
 #else
     of_fdt_unflatten_tree(overlay->dtbo, &overlay->node);
@@ -91,7 +91,7 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
     }
     pr_debug("%s: unflattened OK\n", __func__);
 
-#if (LINUX_VERSION_CODE >= 0x040F00)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0))
     {
         int ovcs_id = 0;
 
@@ -139,7 +139,7 @@ static int dtbocfg_overlay_item_create(struct dtbocfg_overlay_item *overlay)
 static void dtbocfg_overlay_item_release(struct dtbocfg_overlay_item *overlay)
 {
     if (overlay->id >= 0) {
-#if (LINUX_VERSION_CODE >= 0x040F00)
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(4, 15, 0))
         of_overlay_remove(&overlay->id);
 #else        
         of_overlay_destroy(overlay->id);
