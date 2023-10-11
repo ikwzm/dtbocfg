@@ -41,7 +41,34 @@ When building a kernel, Device-Tree-Overlay option should be enabled.
 You can enable the option via `make menu_config` ---> `Device Drivers` ---> `Device Tree and Open Firmware support`
 ---> `Device Tree overlays`, or by manually addting `CONFIG_OF_OVERLAY=y` in `.config`.
 
-## Builiding dtbocfg
+## Builiding dtbocfg in-tree
+
+Clone the git repository in the `drivers/of/` directory in your kernel tree, and add the following in 
+`drivers/of/Kconfig`:
+
+````
+config OF_DTBOCFG
+	bool
+	help
+	  Enable configFS control of device tree at runtime
+````
+
+and in the `config OF_OVERLAY` block:
+
+````
+    select OF_DTBOCFG
+````
+
+Then in `drivers/of/Makefile`:
+
+````
+obj-$(CONFIG_OF_DTBOCFG) += dtbocfg/
+````
+
+Then you should be able to build the kernel with the module built-in, with the module auto-selected from the 
+`OF_OVERLAY` property.
+
+## Builiding dtbocfg as a module
 
 Clone the git repository, and run `make` after modifying it according to your environment.
 

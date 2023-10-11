@@ -3,6 +3,8 @@ ARCH            ?= $(shell uname -m | sed -e s/arm.*/arm/ -e s/aarch64.*/arm64/)
 BUILD_DIR       ?= $(PWD)
 _BUILD_DIR      ?= $(shell readlink -f $(BUILD_DIR))
 
+CONFIG_OF_DTBOCFG ?= m
+
 ifdef KERNEL_SRC
   KERNEL_SRC_DIR  := $(KERNEL_SRC)
 else
@@ -20,7 +22,7 @@ ifeq ($(ARCH), arm64)
  endif
 endif
 
-obj-m := dtbocfg.o
+obj-$(CONFIG_OF_DTBOCFG) := dtbocfg.o
 
 all:
 	@# If this is an out-of-tree build, we have to create an empty makefile in the build directory
