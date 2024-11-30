@@ -26,7 +26,7 @@ all:
 	@# If this is an out-of-tree build, we have to create an empty makefile in the build directory
 	@# (this is a hack to get around Makefile.modpost trying to include the makefile
 	@#  and failing since we're doing a split build by setting src= inside the main Makefile)
-	@( [[ "$(BUILD_DIR)" != "$(PWD)" ]] && (mkdir -p "$(BUILD_DIR)" && touch "$(BUILD_DIR)/Makefile") || true )
+	@( [ "$(BUILD_DIR)" != "$(PWD)" ] && (mkdir -p "$(BUILD_DIR)" && touch "$(BUILD_DIR)/Makefile") || true )
 
 	$(MAKE) -C $(KERNEL_SRC_DIR) ARCH=$(ARCH) CROSS_COMPILE=$(CROSS_COMPILE) M=$(_BUILD_DIR) src=$(PWD) modules
 
