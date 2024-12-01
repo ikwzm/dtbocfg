@@ -1,6 +1,6 @@
 /*********************************************************************************
  *
- *       Copyright (C) 2016-2023 Ichiro Kawazome
+ *       Copyright (C) 2016-2024 Ichiro Kawazome
  *       All rights reserved.
  * 
  *       Redistribution and use in source and binary forms, with or without
@@ -40,7 +40,7 @@
 #include <linux/version.h>
 
 #define DRIVER_NAME        "dtbocfg"
-#define DRIVER_VERSION     "0.1.0"
+#define DRIVER_VERSION     "0.1.1"
 
 /**
  * Device Tree Overlay Item Structure
